@@ -3,16 +3,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter/services.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-await Firebase.initializeApp(
+  await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-);  runApp(MyApp());
+  );
+  runApp(const MyApp());
 }
-
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -22,7 +20,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -30,22 +28,42 @@ class _MyAppState extends State<MyApp> {
   void getTokenAndHandleMessages() async {
     String? token = await _firebaseMessaging.getToken();
     print("Firebase Messaging Token: $token");
-
-    // Here you would send the token to your server or database where the Python script can access it
   }
+
   @override
-  
   void initState() {
     getTokenAndHandleMessages();
     super.initState();
     FirebaseMessaging.instance.requestPermission();
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-
       print('Got a message whilst in the foreground!');
       print("Received message: ${message.notification?.title}, ${message.notification?.body}");
-
       if (message.notification != null) {
-        print('Message also contained a notification: ${message.notification}');
+        showDialog(
+          context: _scaffoldKey.currentContext!,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(message.notification!.title!),
+              content: Text(message.notification!.body!),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text("Yes"),
+                  onPressed: () {
+                    // Handle Yes response
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: const Text("No"),
+                  onPressed: () {
+                    // Handle No response
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
       }
     });
   }
@@ -54,8 +72,9 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: Text('Firebase Messaging Demo')),
-        body: Center(child: Text('Listening for messages...'))
+        key: _scaffoldKey,
+        appBar: AppBar(title: const Text('Firebase Messaging Demo')),
+        body: const Center(child: Text('Listening for messages...')),
       ),
     );
   }
