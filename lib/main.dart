@@ -21,6 +21,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final DatabaseReference databaseReference = FirebaseDatabase.instance.ref();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -50,15 +51,24 @@ class _MyAppState extends State<MyApp> {
                 TextButton(
                   child: const Text("Yes"),
                   onPressed: () {
-                    // Handle Yes response
+                    databaseReference.child('potholes_reports').child('Today').child('1').set({
+                      'confirmed':'Yes',
+                      'location':'Oakland University', 
+                      'coordinates':'42.6722094397413, -83.21526290699025',
+                      'date':DateTime.now().toString()
+                    });
                     Navigator.of(context).pop();
                   },
                 ),
                 TextButton(
                   child: const Text("No"),
                   onPressed: () {
-                    // Handle No response
-                    Navigator.of(context).pop();
+databaseReference.child('potholes_reports').child('Today').child('2').set({
+                      'confirmed':'No',
+                      'location':'Oakland University',
+                      'coordinates':'42.6722094397413, -83.21526290699025',
+                      'date':DateTime.now().toString()
+                    });                    Navigator.of(context).pop();
                   },
                 ),
               ],
@@ -74,8 +84,8 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         key: _scaffoldKey,
-        appBar: AppBar(title: const Text('Firebase Messaging Demo')),
-        body: const Center(child: Text('Listening for messages...')),
+        appBar: AppBar(title: const Text('Roadi - The pothole detector')),
+        body: const Center(child: Text('Waiting for detection.......')),
       ),
     );
   }
